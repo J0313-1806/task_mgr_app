@@ -2,23 +2,63 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:task_mgr_app/src/controller/taskcontroller.dart';
 
-class AddTask extends StatelessWidget {
+class AddTask extends StatefulWidget {
   const AddTask({super.key});
 
-  static final Taskcontroller taskController = Get.put(Taskcontroller());
+  static final Taskcontroller taskController = Get.find();
+
+  @override
+  State<AddTask> createState() => _AddTaskState();
+}
+
+class _AddTaskState extends State<AddTask> {
+  @override
+  void dispose() {
+    titleController.dispose();
+    descriptionController.dispose();
+    blockedByController.dispose();
+    dateController.dispose();
+    super.dispose();
+  }
+
+  final _formKey = GlobalKey<FormState>();
+
+  // Controllers
+  final titleController = TextEditingController(
+    text: AddTask.taskController.titleField.value,
+  );
+  final descriptionController = TextEditingController(
+    text: AddTask.taskController.descriptionField.value,
+  );
+  final blockedByController = TextEditingController(
+    text: AddTask.taskController.blockedByField.value,
+  );
+  final dateController = TextEditingController(
+    text: AddTask.taskController.dateField.value,
+  );
 
   @override
   Widget build(BuildContext context) {
-    final _formKey = GlobalKey<FormState>();
-
-    // Controllers
-    final titleController = TextEditingController();
-    final descriptionController = TextEditingController();
-    final blockedByController = TextEditingController();
-    final dateController = TextEditingController();
-
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Task')),
+      appBar: AppBar(
+        title: const Text('Add Task'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              AddTask.taskController.titleField('');
+              AddTask.taskController.descriptionField('');
+              AddTask.taskController.blockedByField('');
+              AddTask.taskController.dateField('');
+              titleController.clear();
+              descriptionController.clear();
+              dateController.clear();
+              blockedByController.clear();
+              AddTask.taskController.selectedStatus('');
+            },
+            icon: Icon(Icons.delete_outline),
+          ),
+        ],
+      ),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -34,33 +74,39 @@ class AddTask extends StatelessWidget {
               ),
               validator: (value) =>
                   value == null || value.isEmpty ? 'Title is required' : null,
+              onChanged: (value) {
+                AddTask.taskController.titleField(value);
+              },
             ),
             const SizedBox(height: 10),
 
-            DropdownButtonFormField<String>(
-              initialValue: taskController.selectedStatus.value.isEmpty
-                  ? null
-                  : taskController.selectedStatus.value,
-              decoration: InputDecoration(
-                labelText: "Status",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6.0),
+            Obx(
+              () => DropdownButtonFormField<String>(
+                initialValue:
+                    AddTask.taskController.selectedStatus.value.isEmpty
+                    ? null
+                    : AddTask.taskController.selectedStatus.value,
+                decoration: InputDecoration(
+                  labelText: "Status",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(6.0),
+                  ),
                 ),
+                items: const [
+                  DropdownMenuItem(value: "To-Do", child: Text("To-Do")),
+                  DropdownMenuItem(
+                    value: "In Progress",
+                    child: Text("In Progress"),
+                  ),
+                  DropdownMenuItem(value: "Done", child: Text("Done")),
+                ],
+                onChanged: (value) {
+                  AddTask.taskController.selectedStatus.value = value ?? '';
+                },
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Please select a status'
+                    : null,
               ),
-              items: const [
-                DropdownMenuItem(value: "To-Do", child: Text("To-Do")),
-                DropdownMenuItem(
-                  value: "In Progress",
-                  child: Text("In Progress"),
-                ),
-                DropdownMenuItem(value: "Done", child: Text("Done")),
-              ],
-              onChanged: (value) {
-                taskController.selectedStatus.value = value ?? '';
-              },
-              validator: (value) => value == null || value.isEmpty
-                  ? 'Please select a status'
-                  : null,
             ),
             const SizedBox(height: 10),
 
@@ -75,6 +121,9 @@ class AddTask extends StatelessWidget {
               validator: (value) => value == null || value.isEmpty
                   ? 'Description is required'
                   : null,
+              onChanged: (value) {
+                AddTask.taskController.descriptionField(value);
+              },
             ),
             const SizedBox(height: 20),
 
@@ -97,10 +146,13 @@ class AddTask extends StatelessWidget {
                   lastDate: DateTime(2100),
                 );
                 if (picked != null) {
-                  dateController.text = taskController.dateToString(picked);
-                      // "${picked.day}-${picked.month}-${picked.year}";
-                  // taskController.selectedDate.value = taskController
-                  //     .dateToString(picked);
+                  dateController.text = AddTask.taskController.dateToString(
+                    picked,
+                  );
+
+                  AddTask.taskController.dateField.value = AddTask
+                      .taskController
+                      .dateToString(picked);
                 }
               },
             ),
@@ -114,21 +166,22 @@ class AddTask extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6.0),
                 ),
               ),
+              onChanged: (value) {
+                AddTask.taskController.blockedByField(value);
+              },
             ),
             const SizedBox(height: 20),
 
             ElevatedButton(
               onPressed: () async {
                 if (_formKey.currentState!.validate()) {
-                  // All fields valid, proceed with saving
-                  taskController.addTask(
+                  AddTask.taskController.addTask(
                     titleController.text,
                     descriptionController.text,
-                    taskController.selectedStatus.value,
+                    AddTask.taskController.selectedStatus.value,
                     dateController.text,
                     int.tryParse(blockedByController.text),
                   );
-                  // Get.back(); // close page after saving
                 }
               },
               child: const Text("Save Task"),

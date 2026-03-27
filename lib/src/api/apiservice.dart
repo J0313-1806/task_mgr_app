@@ -31,11 +31,11 @@ class Apiservice {
 
         return result;
       } else {
-        print("Registration failed with status code: ${response.statusCode}");
+        print("Fetching failed with status code: ${response.statusCode}");
         return null;
       }
     } catch (e) {
-      print("Error during registration: $e");
+      print("Error during Fetch tasks: $e");
       return null;
     }
   }
@@ -61,6 +61,33 @@ class Apiservice {
       }
     } catch (e) {
       print("Error during Fetch by status: $e");
+      return null;
+    }
+  }
+
+  static Future<List<TaskModel>?> getTasksBySearch(
+    String query
+  ) async {
+    try {
+      final url = Uri.parse(
+        '$baseUrl/tasks/tasks/search?$query',
+      );
+
+      final response = await http.get(
+        url,
+        headers: {"Content-Type": "application/json"},
+      );
+
+      if (response.statusCode == 200) {
+        final result = taskModelFromJson(response.body);
+
+        return result;
+      } else {
+        print("Searching failed with status code: ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      print("Error during Search: $e");
       return null;
     }
   }

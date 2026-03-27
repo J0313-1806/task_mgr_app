@@ -8,9 +8,19 @@ class Taskcontroller extends GetxController {
   RxBool taskAddLoader = false.obs;
   RxBool taskUpdateLoader = false.obs;
   RxBool taskDeleteLoader = false.obs;
+  RxBool searchButtonTap = false.obs;
+  RxBool showDateFilter = false.obs;
   RxList<TaskModel> tasks = <TaskModel>[].obs;
   RxString selectedStatus = "".obs;
   RxString selectedDate = "".obs;
+  RxString filterSelected = "Title".obs;
+  RxString searchParam = "".obs;
+  RxString searchQuery = "".obs;
+  RxString searchDateQuery = "Pick Date".obs;
+  RxString titleField = ''.obs;
+  RxString descriptionField = ''.obs;
+  RxString dateField = ''.obs;
+  RxString blockedByField = ''.obs;
   RxList<int> tileSelected = <int>[].obs;
   List<String> statusForApi = ['Done', 'In Progress', 'To-Do'];
 
@@ -26,8 +36,36 @@ class Taskcontroller extends GetxController {
     }
   }
 
+  void onSearchTapped() {
+    if (searchButtonTap.isTrue) {
+      getTasks();
+    }
+    filterSelected('Title');
+    searchDateQuery('Pick Date');
+    showDateFilter(false);
+    searchButtonTap.toggle();
+  }
+
+  void dropFilter(String? value) {
+    if (value != null) {
+      if (value.contains("Date")) {
+        showDateFilter(value.contains('Date'));
+      } else {
+        showDateFilter(false);
+      }
+      filterSelected(value);
+      getTasks();
+    }
+  }
+
+  void onDateQuery(String value) {
+    searchDateQuery(value);
+    searchTasks('due_date=$value');
+  }
+
   void getTasks() async {
     gettingTaskLoader(true);
+    // tasks.clear();
 
     final result = await Apiservice.getTasks();
     if (result != null) {
@@ -39,8 +77,21 @@ class Taskcontroller extends GetxController {
 
   void getTasksByStatus(int index) async {
     gettingTaskLoader(true);
+    // tasks.clear();
     String status = statusForApi[index - 1];
     final result = await Apiservice.getTasksByStatus(status);
+    if (result != null) {
+      tasks(result);
+      gettingTaskLoader(false);
+    }
+    gettingTaskLoader(false);
+  }
+
+  void searchTasks(String query) async {
+    gettingTaskLoader(true);
+    // tasks.clear();
+
+    final result = await Apiservice.getTasksBySearch(query);
     if (result != null) {
       tasks(result);
       gettingTaskLoader(false);
@@ -78,6 +129,10 @@ class Taskcontroller extends GetxController {
           backgroundColor: Colors.redAccent,
           colorText: Colors.white,
         );
+        titleField('');
+        descriptionField('');
+        dateField('');
+        blockedByField('');
       } else {
         taskAddLoader(false);
         Get.snackbar(
