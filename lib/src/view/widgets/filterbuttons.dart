@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:task_mgr_app/src/controller/taskcontroller.dart';
 
 class FilterHeaderDelegate extends SliverPersistentHeaderDelegate {
   const FilterHeaderDelegate();
@@ -6,9 +8,12 @@ class FilterHeaderDelegate extends SliverPersistentHeaderDelegate {
   static final Map<String, Color> buttonDetails = {
     'All': Colors.blue,
     'Completed': Colors.green,
+    'In Progress': Colors.pinkAccent,
     'Pending': Colors.orange,
     'Blocked': Colors.redAccent,
   };
+
+  static final Taskcontroller taskcontroller = Get.find();
 
   @override
   Widget build(
@@ -27,7 +32,13 @@ class FilterHeaderDelegate extends SliverPersistentHeaderDelegate {
         itemBuilder: (context, index) => Container(
           margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 6.0),
           child: filterButton(
-            onPressed: () {},
+            onPressed: () {
+              index == 0
+                  ? taskcontroller.getTasks()
+                  : taskcontroller.getTasksByStatus(
+                     index
+                    );
+            },
             bgColor: buttonDetails.values.toList()[index],
             buttonName: buttonDetails.keys.toList()[index],
           ),
