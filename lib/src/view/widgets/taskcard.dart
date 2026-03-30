@@ -12,23 +12,26 @@ class TaskCard extends StatelessWidget {
 
   static final List<String> statusList = ["To-Do", "In Progress", "Done"];
 
-  static Color taskColor = Colors.white;
+  // static Color taskColor =
+
+  Color get taskColor {
+    switch (task.status) {
+      case 'To-Do':
+        return Colors.orangeAccent;
+      // break;
+      case 'In Progress':
+        return Colors.pinkAccent;
+      // break;
+      case 'Done':
+        return Colors.green;
+      // break;
+      default:
+        return Colors.white;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    switch (task.status) {
-      case 'To-Do':
-        taskColor = Colors.orangeAccent;
-        break;
-      case 'In Progress':
-        taskColor = Colors.pinkAccent;
-        break;
-      case 'Done':
-        taskColor = Colors.green;
-        break;
-      default:
-    }
-
     return Card(
       // margin: EdgeInsets.all( 5),
       child: Obx(
@@ -40,13 +43,11 @@ class TaskCard extends StatelessWidget {
               showTask();
             }
           },
-          onLongPress: () {
+          onDoubleTap: () {
             taskController.selectTasks(task.id!);
           },
           child: ListTile(
-            // enabled: false,
-            tileColor: taskColor,
-            isThreeLine: true,
+            tileColor: task.blockedById != null ? Colors.blueGrey : taskColor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10.0),
               side: taskController.tileSelected.contains(task.id!)
@@ -54,30 +55,63 @@ class TaskCard extends StatelessWidget {
                   : BorderSide.none,
             ),
 
-            title: Text(task.title),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 10),
-                Text(task.dueDate),
-                const SizedBox(height: 10),
-                Text(task.status, style: TextStyle()),
-                const SizedBox(height: 10),
-                Text(task.description),
-                const SizedBox(height: 100),
-                task.blockedById == null
-                    ? SizedBox()
-                    : Align(
-                        alignment: Alignment.bottomLeft,
-                        child: Text(
-                          'Blocked by ..',
-                          style: TextStyle(
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold,
+            title: Text(
+              task.title,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            subtitle: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 10),
+                  Text(
+                    task.dueDate,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    task.status,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    task.description,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+
+                  const SizedBox(height: 100),
+                  task.blockedById == null
+                      ? SizedBox()
+                      : Align(
+                          alignment: Alignment.bottomLeft,
+                          child: Text(
+                            'Blocked by ..${taskController.tasks.isNotEmpty ? taskController.tasks.firstWhereOrNull((t) => t.id == task.blockedById)?.title : ''}',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.redAccent,
+                            ),
                           ),
                         ),
-                      ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -123,7 +157,7 @@ class TaskCard extends StatelessWidget {
                         ? 'Title required'
                         : null,
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 15),
 
                   DropdownButtonFormField<String>(
                     initialValue: task.status.isNotEmpty
@@ -151,8 +185,7 @@ class TaskCard extends StatelessWidget {
                     validator: (value) =>
                         value == null || value.isEmpty ? 'Select status' : null,
                   ),
-                  const SizedBox(height: 10),
-
+                  const SizedBox(height: 20),
                   TextFormField(
                     controller: descriptionController,
                     decoration: InputDecoration(
@@ -165,7 +198,7 @@ class TaskCard extends StatelessWidget {
                         ? 'Description required'
                         : null,
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 15),
 
                   TextFormField(
                     controller: dateController,
@@ -199,16 +232,30 @@ class TaskCard extends StatelessWidget {
                       }
                     },
                   ),
-                  const SizedBox(height: 20),
-
-                  TextFormField(
-                    controller: blockedByController,
+                  const SizedBox(height: 15),
+                  DropdownButtonFormField<String>(
+                    initialValue: null,
                     decoration: InputDecoration(
-                      hintText: 'Blocked by',
+                      labelText:
+                          "Blocked by ${task.blockedById != null ? taskController.tasks.firstWhere((t) => t.id == task.blockedById).title : ''}",
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(6.0),
                       ),
                     ),
+                    items: taskController.tasks
+                        .map(
+                          (t) => DropdownMenuItem(
+                            value: t.id.toString(),
+                            child: Text(t.title),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      blockedByController.text =
+                          value ?? task.blockedById.toString();
+                    },
+                    // validator: (value) =>
+                    //     value == null || value.isEmpty ? 'Select status' : null,
                   ),
                   const SizedBox(height: 20),
 
@@ -264,112 +311,4 @@ class TaskCard extends StatelessWidget {
       ),
     );
   }
-
-  // void showTask() async {
-  //   Get.dialog(
-  //     Dialog(
-  //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-  //       child: SingleChildScrollView(
-  //         child: Padding(
-  //           padding: EdgeInsets.only(
-  //             left: 2.0,
-  //             right: 2.0,
-  //             top: 2.0,
-  //             bottom: MediaQuery.of(Get.context!).viewInsets.bottom,
-  //           ),
-  //           child: Card(
-  //             child: Container(
-  //               padding: EdgeInsets.all(12),
-  //               // margin: EdgeInsets.only(bottom: 2.0),
-  //               decoration: BoxDecoration(
-  //                 color: Colors.white,
-  //                 borderRadius: BorderRadius.circular(12),
-  //               ),
-  //               child: Column(
-  //                 children: [
-  //                   TextFormField(
-  //                     decoration: InputDecoration(
-  //                       hintText: 'Title',
-  //                       border: OutlineInputBorder(
-  //                         borderRadius: BorderRadius.circular(6.0),
-  //                       ),
-  //                     ),
-  //                   ),
-  //                   const SizedBox(height: 10),
-  //                   DropdownButtonFormField<String>(
-  //                     initialValue: taskController.selectedStatus.value.isEmpty
-  //                         ? null
-  //                         : taskController.selectedStatus.value,
-  //                     decoration: InputDecoration(
-  //                       labelText: "Status",
-  //                       border: OutlineInputBorder(
-  //                         borderRadius: BorderRadius.circular(6.0),
-  //                       ),
-  //                     ),
-  //                     items: const [
-  //                       // DropdownMenuItem(value: "", child: Text("Status")),
-  //                       DropdownMenuItem(value: "To-Do", child: Text("To-Do")),
-  //                       DropdownMenuItem(
-  //                         value: "In Progress",
-  //                         child: Text("In Progress"),
-  //                       ),
-  //                       DropdownMenuItem(value: "Done", child: Text("Done")),
-  //                     ],
-  //                     onChanged: (value) {
-  //                       taskController.changedStatus(value ?? '');
-  //                     },
-  //                   ),
-  //                   const SizedBox(height: 10),
-  //                   TextFormField(
-  //                     decoration: InputDecoration(
-  //                       hintText: 'Description',
-  //                       border: OutlineInputBorder(
-  //                         borderRadius: BorderRadius.circular(6.0),
-  //                       ),
-  //                     ),
-  //                   ),
-  //                   const SizedBox(height: 20),
-  //                   TextFormField(
-  //                     controller: TextEditingController(
-  //                       text: taskController.selectedDate.value,
-  //                     ),
-  //                     decoration: InputDecoration(
-  //                       hintText: 'Select Date',
-  //                       border: OutlineInputBorder(
-  //                         borderRadius: BorderRadius.circular(6.0),
-  //                       ),
-  //                     ),
-  //                     onTap: () async {
-  //                       final DateTime? picked = await showDatePicker(
-  //                         context: Get.context!,
-  //                         initialDate: taskController.stringToDate(
-  //                           taskController.selectedDate.value,
-  //                         ),
-  //                         firstDate: DateTime(2000),
-  //                         lastDate: DateTime(2100),
-  //                       );
-  //                       if (picked != null) {
-  //                         taskController.selectedDate.value = taskController
-  //                             .dateToString(picked);
-  //                       }
-  //                     },
-  //                   ),
-  //                   const SizedBox(height: 20),
-  //                   TextFormField(
-  //                     decoration: InputDecoration(
-  //                       hintText: 'blocked by',
-  //                       border: OutlineInputBorder(
-  //                         borderRadius: BorderRadius.circular(6.0),
-  //                       ),
-  //                     ),
-  //                   ),
-  //                 ],
-  //               ),
-  //             ),
-  //           ),
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
 }

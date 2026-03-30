@@ -10,7 +10,7 @@ class FilterHeaderDelegate extends SliverPersistentHeaderDelegate {
     'Completed': Colors.green,
     'In Progress': Colors.pinkAccent,
     'Pending': Colors.orange,
-    'Blocked': Colors.redAccent,
+    // 'Blocked': Colors.redAccent,
   };
 
   static final Taskcontroller taskcontroller = Get.find();

@@ -6,8 +6,8 @@ import 'package:http/http.dart' as http;
 class Apiservice {
   // static const String baseUrl = "http://10.0.2.2:8000";
 
-  static const String emulatorBaseUrl = "http://10.0.2.2:8000";
-  static const String wifiBaseUrl = "http://192.168.1.8:8000";
+  static const String emulatorBaseUrl = "http://192.168.1.10:8000";
+  static const String wifiBaseUrl = "http://192.168.1.10:8000";
 
   static String get baseUrl {
     if (const bool.fromEnvironment('dart.vm.product')) {
@@ -65,13 +65,9 @@ class Apiservice {
     }
   }
 
-  static Future<List<TaskModel>?> getTasksBySearch(
-    String query
-  ) async {
+  static Future<List<TaskModel>?> getTasksBySearch(String query) async {
     try {
-      final url = Uri.parse(
-        '$baseUrl/tasks/tasks/search?$query',
-      );
+      final url = Uri.parse('$baseUrl/tasks/tasks/search?$query');
 
       final response = await http.get(
         url,
@@ -200,6 +196,38 @@ class Apiservice {
     } catch (e) {
       print("Error during Bulk Deletion: $e");
       return "Error during Bulk Deletion: $e";
+    }
+  }
+
+  static Future<String?> moveTask(int id, int newIndex) async {
+    // List<Map<String, int?>>reorderedList
+    try {
+      final url = Uri.parse(
+        '$baseUrl/tasks/tasks/move/$id?new_position=$newIndex',
+      );
+
+      final response = await http.put(
+        url,
+        headers: {"Content-Type": "application/json"},
+        // body: jsonEncode({"tasks": reorderedList}),
+      );
+
+      if (response.statusCode == 200) {
+        final result = TaskModel.fromJson(jsonDecode(response.body));
+
+        if (result.id != null) {
+          return 'success';
+        }
+        return 'Error in the model';
+      } else {
+        print(
+          "rearranging task failed with status code: ${response.statusCode}",
+        );
+        return 'rearranging task failed with status code: ${response.statusCode}';
+      }
+    } catch (e) {
+      print("Error during rearranging task: $e");
+      return "Error during rearranging task: $e";
     }
   }
 }

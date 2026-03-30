@@ -13,6 +13,7 @@ class Taskcontroller extends GetxController {
   RxList<TaskModel> tasks = <TaskModel>[].obs;
   RxString selectedStatus = "".obs;
   RxString selectedDate = "".obs;
+  RxString selecteBlockBy = "".obs;
   RxString filterSelected = "Title".obs;
   RxString searchParam = "".obs;
   RxString searchQuery = "".obs;
@@ -130,6 +131,7 @@ class Taskcontroller extends GetxController {
           colorText: Colors.white,
         );
         titleField('');
+        selectedStatus('');
         descriptionField('');
         dateField('');
         blockedByField('');
@@ -296,6 +298,47 @@ class Taskcontroller extends GetxController {
       );
     }
     taskDeleteLoader(false);
+  }
+
+  void movingTask(int id, int oldIndex, int newIndex) async {
+    //int id, int newIndexList<Map<String, int?>> reorderedList
+    // taskDeleteLoader(true);
+
+    final result = await Apiservice.moveTask(id, newIndex);
+
+    if (result != null) {
+      if (result.contains('success')) {
+        final task = tasks.removeAt(oldIndex);
+        tasks.insert(newIndex, task);
+        // tileSelected.clear();
+        // taskDeleteLoader(false);
+        // Get.back();
+        // getTasks();
+        // Get.snackbar(
+        //   "Successfully deleted.",
+        //   result,
+        //   backgroundColor: Colors.redAccent,
+        //   colorText: Colors.white,
+        // );
+      } else {
+        // taskDeleteLoader(false);
+        // Get.snackbar(
+        //   "Deletion failed.",
+        //   "$result\nPlease try again.",
+        //   backgroundColor: Colors.redAccent,
+        //   colorText: Colors.white,
+        // );
+      }
+    } else {
+      // taskDeleteLoader(false);
+      // Get.snackbar(
+      //   "Deletion failed.",
+      //   "$result\nPlease try again.",
+      //   backgroundColor: Colors.redAccent,
+      //   colorText: Colors.white,
+      // );
+    }
+    // taskDeleteLoader(false);
   }
 
   @override

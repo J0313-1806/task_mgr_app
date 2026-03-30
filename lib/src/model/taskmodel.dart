@@ -9,11 +9,18 @@ List<TaskModel> taskModelFromJson(String str) =>
 
 // String taskModelToJson(List<TaskModel> data) =>
 //     json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
-String bulkDeleteToJson(List<int> data) => json.encode(List<dynamic>.from(data.map((x) => x)));
+String bulkDeleteToJson(List<int> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x)));
 // TaskModel taskModelAddFromJson(String str) =>
 //     TaskModel.fromJson(json.decode(str));
 // String taskModelAddToJson(TaskModel data) => json.encode(data.toJson());
 String taskModelSendToJson(TaskModelSend data) => json.encode(data.toJson());
+
+ReorderListModel reorderListModelFromJson(String str) =>
+    ReorderListModel.fromJson(json.decode(str));
+
+String reorderListModelToJson(ReorderListModel data) =>
+    json.encode(data.toJson());
 
 class TaskModel {
   final String title;
@@ -91,4 +98,31 @@ class TaskModelSend {
     "blocked_by_id": blockedById,
     "position": position,
   };
+}
+
+class ReorderListModel {
+  final List<Task> tasks;
+
+  ReorderListModel({required this.tasks});
+
+  factory ReorderListModel.fromJson(Map<String, dynamic> json) =>
+      ReorderListModel(
+        tasks: List<Task>.from(json["tasks"].map((x) => Task.fromJson(x))),
+      );
+
+  Map<String, dynamic> toJson() => {
+    "tasks": List<dynamic>.from(tasks.map((x) => x.toJson())),
+  };
+}
+
+class Task {
+  final int id;
+  final int position;
+
+  Task({required this.id, required this.position});
+
+  factory Task.fromJson(Map<String, dynamic> json) =>
+      Task(id: json["id"], position: json["position"]);
+
+  Map<String, dynamic> toJson() => {"id": id, "position": position};
 }

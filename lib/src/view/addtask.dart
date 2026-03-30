@@ -158,18 +158,51 @@ class _AddTaskState extends State<AddTask> {
             ),
             const SizedBox(height: 20),
 
-            TextFormField(
-              controller: blockedByController,
-              decoration: InputDecoration(
-                hintText: 'Blocked by',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6.0),
+            Obx(
+              () => DropdownButtonFormField<String>(
+                initialValue: null,
+                decoration: InputDecoration(
+                  labelText: "Blocked by",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(6.0),
+                  ),
                 ),
+                items: AddTask.taskController.tasks.isNotEmpty
+                    ? AddTask.taskController.tasks
+                          .map(
+                            (f) => DropdownMenuItem(
+                              value: f.id.toString(),
+                              child: Text(f.title.toString()),
+                            ),
+                          )
+                          .toList()
+                    : [
+                        DropdownMenuItem(
+                          value: "No data",
+                          child: Text("No data"),
+                        ),
+                      ],
+                onChanged: (value) {
+                  blockedByController.text = value ?? '';
+                  AddTask.taskController.blockedByField(value);
+                },
+                // validator: (value) => value == null || value.isEmpty
+                //     ? 'Please select a blocked by'
+                //     : null,
               ),
-              onChanged: (value) {
-                AddTask.taskController.blockedByField(value);
-              },
             ),
+            // TextFormField(
+            //   controller: blockedByController,
+            //   decoration: InputDecoration(
+            //     hintText: 'Blocked by',
+            //     border: OutlineInputBorder(
+            //       borderRadius: BorderRadius.circular(6.0),
+            //     ),
+            //   ),
+            //   onChanged: (value) {
+            //     AddTask.taskController.blockedByField(value);
+            //   },
+            // ),
             const SizedBox(height: 20),
 
             ElevatedButton(
