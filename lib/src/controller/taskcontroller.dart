@@ -191,6 +191,17 @@ class Taskcontroller extends GetxController {
       position: position,
     );
 
+    if (blockedById != null) {
+      taskUpdateLoader(false);
+      Get.snackbar(
+        "Cannot update task.",
+        "Blocked by another task. Please complete that first.",
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
     final result = await Apiservice.updateTask(taskModelData, id!);
 
     if (result != null) {
