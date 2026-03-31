@@ -6,8 +6,8 @@ import 'package:http/http.dart' as http;
 class Apiservice {
   // static const String baseUrl = "http://10.0.2.2:8000";
 
-  static const String emulatorBaseUrl = "http://192.168.1.10:8000";
-  static const String wifiBaseUrl = "http://192.168.1.10:8000";
+  static const String emulatorBaseUrl = "http://10.0.2.2:8000";
+  static const String wifiBaseUrl = "http://192.168.1.10:8000"; //local ip address of the backend server
 
   static String get baseUrl {
     if (const bool.fromEnvironment('dart.vm.product')) {
