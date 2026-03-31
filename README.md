@@ -16,17 +16,20 @@ A Flutter application for managing tasks with advanced features like search, dra
    ```bash
    git clone https://github.com/J0313-1806/task_mgr_app
    cd <project-folder>
+   ```
+```bash
 2. flutter pub get
+```
+```bash
 3. Connect backend
-
     Update the API base URL in your app’s configuration to point to the [(backend repo)](https://github.com/J0313-1806/task_mgr_api).
-
     Ensure the backend server is running.
+```
+```bash
 4. flutter run
 5. flutter build apk --release
    adb install -r build/app/outputs/flutter-apk/app-release.apk
-    ```
-
+```
 
 
 **✨ Features**
